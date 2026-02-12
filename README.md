@@ -1,6 +1,6 @@
 # Basic AI Agent
 
-A simple command-line AI agent built with Python and the Anthropic SDK. This agent can chat with you and has the ability to read local files using a custom tool.
+A simple command-line AI agent built with Python and the Anthropic SDK. This agent can chat with you and has the ability to read local files using a custom tool. Inspired by [Amp's blogpost](https://ampcode.com/notes/how-to-build-an-agent) about building a simple agent in Go. 
 
 ## Prerequisites
 
