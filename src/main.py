@@ -43,9 +43,6 @@ class Agent:
             
             conversation.append({"role": "assistant", "content": response.content})
 
-            # if response=="GOODBYE":
-            #     break
-
             for block in response.content:
                 if block.type == "text":
                     print("Agent response: ", block.text)
@@ -57,7 +54,6 @@ class Agent:
                     if block.name == "read_file":
                         try:
                             tool_result_content = read_file(**block.input)
-                            print("RESULT ", tool_result_content)
                         except Exception as e:
                             tool_result_content = str(e)
 
