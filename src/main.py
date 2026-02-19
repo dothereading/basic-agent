@@ -2,7 +2,7 @@ from anthropic import Anthropic
 from dataclasses import dataclass
 import os
 from dotenv import load_dotenv
-from tools import read_file
+from tools import read_file, write_file, run_bash
 
 load_dotenv() 
 
@@ -14,12 +14,10 @@ class Agent:
         self.tools = tools
     
     def _run_inference(self, messages):
-        print("_run inference")
-        print("messages:", messages)
         message = self.client.messages.create(
-                max_tokens=1024,
+                max_tokens=10000,
                 messages=messages,
-                model="claude-sonnet-4-5",
+                model="claude-sonnet-4-6",
                 tools=self.tools
             )
 
@@ -39,39 +37,48 @@ class Agent:
 
             conversation.append({"role": "user", "content": user_message})
 
-            response = self._run_inference(conversation)
-            
-            conversation.append({"role": "assistant", "content": response.content})
+            while True:
+                response = self._run_inference(conversation)
+                conversation.append({"role": "assistant", "content": response.content})
 
-            for block in response.content:
-                if block.type == "text":
-                    print("Agent response: ", block.text)
+                tool_results = []
+                for block in response.content:
+                    if block.type == "text":
+                        print("Agent response: ", block.text)
                 
-                elif block.type == "tool_use":
-                    print("Tool use: ", block.name, " with input: ", block.input)
+                    elif block.type == "tool_use":
+                        print("Tool use: ", block.name, " with input: ", block.input)
 
-                    tool_result_content = ""
-                    if block.name == "read_file":
-                        try:
-                            tool_result_content = read_file(**block.input)
-                        except Exception as e:
-                            tool_result_content = str(e)
+                        tool_result_content = ""
+                        if block.name == "read_file":
+                            try:
+                                tool_result_content = read_file(**block.input)
+                            except Exception as e:
+                                tool_result_content = str(e)
+                        elif block.name == "write_file":
+                            try:
+                                tool_result_content = write_file(**block.input)
+                            except Exception as e:
+                                tool_result_content = str(e)
+                        elif block.name == "run_bash":
+                            try:
+                                tool_result_content = run_bash(**block.input)
+                            except Exception as e:
+                                tool_result_content = str(e)
 
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": block.id,
+                            "content": tool_result_content
+                        })
+                if tool_results:
                     conversation.append({
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "tool_result",
-                                "tool_use_id": block.id,
-                                "content": tool_result_content
-                            }
-                        ]
+                        "role":"user",
+                        "content":tool_results
                     })
-
-                    final_response = self._run_inference(conversation)
-                    print(f"Agent: {final_response.content[0].text}")
-                    conversation.append(final_response.content)
-    
+                else:
+                    break
+        
 
 def main():
     client = Anthropic(
@@ -83,7 +90,10 @@ def main():
         user_message = input()
         return user_message
     
-    tools = [read_file.to_dict()]
+    tools = [
+        read_file.to_dict(), 
+        write_file.to_dict(),
+        run_bash.to_dict()]
     
     agent = Agent(client, get_user_message, tools)
     response = agent.run()
