@@ -1,12 +1,10 @@
 from anthropic import Anthropic
-from dataclasses import dataclass
 import os
 from dotenv import load_dotenv
 from tools import read_file, write_file, run_bash
 
 load_dotenv() 
 
-@dataclass
 class Agent:
     def __init__(self, client, get_user_message, tools: list):
         self.client = client
