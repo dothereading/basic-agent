@@ -1,12 +1,10 @@
 from anthropic import Anthropic
-from dataclasses import dataclass
 import os
 from dotenv import load_dotenv
 from tools import read_file, write_file, run_bash
 
 load_dotenv() 
 
-@dataclass
 class Agent:
     def __init__(self, client, get_user_message, tools: list):
         self.client = client
@@ -44,7 +42,8 @@ class Agent:
                 tool_results = []
                 for block in response.content:
                     if block.type == "text":
-                        print("Agent response: ", block.text)
+                        print("\n--------\n🤖 Agent:")
+                        print(block.text)
                 
                     elif block.type == "tool_use":
                         print("Tool use: ", block.name, " with input: ", block.input)
@@ -86,7 +85,7 @@ def main():
     )
     
     def get_user_message():
-        print("User: ", end="", flush=True)
+        print("\n--------\n🧑 You: ", end="", flush=True)
         user_message = input()
         return user_message
     
@@ -96,8 +95,7 @@ def main():
         run_bash.to_dict()]
     
     agent = Agent(client, get_user_message, tools)
-    response = agent.run()
-    print("Agent: ", response[0].text)
+    agent.run()
 
 
 
