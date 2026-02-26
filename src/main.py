@@ -22,7 +22,7 @@ class Agent:
         return message
 
     def run(self):
-        print("Chat with Claude. Ctrl-c to quit.")
+        print("Chat with Claude. Type 'quit', 'exit', or 'bye' to quit.")
         conversation = []
         
         while True:
@@ -30,6 +30,10 @@ class Agent:
                 user_message = self.get_user_message()
 
             except (EOFError, KeyboardInterrupt): 
+                print("\nGoodbye!")
+                break
+
+            if user_message.strip().lower() in ("quit", "exit", "bye"):
                 print("\nGoodbye!")
                 break
 
